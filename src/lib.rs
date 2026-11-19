@@ -4,12 +4,17 @@
 //!
 //! The core decides without a model or a network: [`model`] is what a forge adapter knows
 //! about a repository, [`classify`] says why a pull request is stuck, [`mainline`] whether
-//! the default branch is red, and [`decide`] what to do. See `docs/design.md`.
+//! the default branch is red, and [`decide`] what to do. [`github`] reads a repository into
+//! the model, and [`scan`] reports the decisions without acting. See `docs/design.md`.
 
 pub mod classify;
 pub mod decide;
+pub mod github;
 pub mod mainline;
+pub mod markers;
 pub mod model;
+pub mod scan;
+pub mod time;
 
 /// The version of this build.
 pub fn version() -> &'static str {
