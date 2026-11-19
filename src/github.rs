@@ -161,8 +161,9 @@ pub fn required_checks(rules: &Value) -> Vec<String> {
         .collect()
 }
 
-/// The checks of a head: its check runs and its commit statuses. With no required checks
-/// known, every check counts as required.
+/// The checks of a head: its check runs and its commit statuses, and a pending check for every
+/// required one that has not reported yet. With no required checks known, every check counts
+/// as required.
 pub fn checks(runs: &Value, statuses: &Value, required: &[String]) -> Vec<Check> {
     let is_required = |name: &str| required.is_empty() || required.iter().any(|r| r == name);
     let mut out: Vec<Check> = runs["check_runs"]
@@ -203,6 +204,18 @@ pub fn checks(runs: &Value, statuses: &Value, required: &[String]) -> Vec<Check>
                 .flatten(),
             infrastructure: false,
         });
+    }
+    // A required check that has not reported yet is still to come, not missing.
+    for name in required {
+        if !out.iter().any(|c| &c.name == name) {
+            out.push(Check {
+                name: name.clone(),
+                required: true,
+                state: CheckState::Pending,
+                completed_at: None,
+                infrastructure: false,
+            });
+        }
     }
     out
 }
@@ -407,6 +420,17 @@ mod tests {
         assert_eq!(all[0].completed_at, parse_rfc3339("2026-11-19T06:00:00Z"));
         // With no rules, every check counts.
         assert!(checks(&runs, &statuses, &[]).iter().all(|c| c.required));
+        // A required check that has not reported is pending, so a fresh push is not green.
+        let fresh = checks(
+            &json!({"check_runs": []}),
+            &json!({"statuses": []}),
+            &["CI passed".into()],
+        );
+        assert_eq!(fresh.len(), 1);
+        assert_eq!(
+            (fresh[0].state, fresh[0].required),
+            (CheckState::Pending, true)
+        );
     }
 
     #[test]
