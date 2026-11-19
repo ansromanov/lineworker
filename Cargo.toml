@@ -1,0 +1,17 @@
+[package]
+name = "lineworker"
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.90"
+license = "MIT OR Apache-2.0"
+description = "Keeps pull requests moving: finds the stuck ones and repairs what it safely can"
+repository = "https://github.com/ansromanov/lineworker"
+publish = false
+
+[dependencies]
+
+[profile.release]
+opt-level = "s"
+lto = "fat"
+codegen-units = 1
+strip = true
