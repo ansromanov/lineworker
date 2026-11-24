@@ -24,9 +24,26 @@ that is what keeps pull requests waiting for hours after their authors are gone.
 
 ## Status
 
-Design stage: the plan is in [`docs/design.md`](docs/design.md), and the code is a skeleton. The
-first slice to be built is conflict repair, end to end, for GitHub and Gitea. lineworker works on
-its own and can tell the author's session first through
+Early. The decisions are built and tested (`src/classify.rs`, `src/mainline.rs`, `src/decide.rs`);
+lineworker can read a GitHub repository and say what it would do, but it does nothing yet:
+
+```bash
+GITHUB_TOKEN=... lineworker scan --github owner/repo
+```
+
+```text
+acme/shop · default branch main: green
+#41 feat: refunds
+  conflict for 3 h → would repair the conflict
+#42 fix: typo
+  green, not queued for 2 h → would put it into the merge queue
+#43 WIP: new checkout
+  skipped: not ready (title)
+```
+
+Next: Gitea and its merge queue, conflict repair without a model (lock files, generated files),
+then repair with Claude Code. The plan is in [`docs/design.md`](docs/design.md). lineworker works
+on its own and can tell the author's session first through
 [chappe](https://github.com/ansromanov/chappe), the coordination chat for AI agents.
 
 ## Build
